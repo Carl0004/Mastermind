@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Mastermind</string>
+    <string name="guess_count">Tentativi: %1$d/10</string>
+    <string name="black_pegs">Palline nere: %1$d</string>
+    <string name="white_pegs">Palline bianche: %1$d</string>
+    <string name="game_won">Hai vinto!</string>
+    <string name="game_lost">Hai perso. Il codice segreto era: %1$s</string>
+    <string name="invalid_guess">Tentativo non valido. Inserisci una sequenza di 5 lettere tra RGBYOPCM.</string>
+</resources>
