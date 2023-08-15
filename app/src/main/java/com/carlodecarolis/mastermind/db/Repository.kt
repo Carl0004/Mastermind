@@ -14,7 +14,11 @@ class Repository(private val dao: MastermindDao) {
             dao.insertGameHistory(game)
         }
     }
-
+    suspend fun getNextId(): Long {
+        return withContext(Dispatchers.IO) {
+            dao.getNextId()
+        }
+    }
     suspend fun delete(game: Game) {
         withContext(Dispatchers.IO) {
             dao.deleteGameHistory(game)

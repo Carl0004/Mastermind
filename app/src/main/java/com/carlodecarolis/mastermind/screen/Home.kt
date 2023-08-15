@@ -22,7 +22,7 @@ fun Home(navController: NavController){
             modifier = Modifier.padding(bottom = 16.dp),
             fontSize = 30.sp,
         )
-        HomeButton(text = "New Game", onClick = {navController.navigate("NewGame")})
+        HomeButton(text = "New Game", onClick = {navController.navigate("GameView")})
         Spacer(modifier = Modifier.height(16.dp))
         HomeButton(text = "Continue", onClick = {navController.navigate("ContinueGame")})
         Spacer(modifier = Modifier.height(16.dp))

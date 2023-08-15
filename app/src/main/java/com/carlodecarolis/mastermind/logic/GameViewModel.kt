@@ -22,9 +22,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    suspend fun insertGameHistory(game: Game) {
+   suspend fun insertGameHistory(game: Game) {
         withContext(Dispatchers.IO) {
             repository.insert(game)
+        }
+    }
+
+    suspend fun getNextId(): Long {
+        return withContext(Dispatchers.IO) {
+            repository.getNextId()
         }
     }
 

@@ -5,6 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.carlodecarolis.mastermind.logic.GameViewModel
+import com.carlodecarolis.mastermind.logic.InstantGame
 
 @Composable
 fun MainScreen(gameViewModel: GameViewModel) {
@@ -12,8 +13,8 @@ fun MainScreen(gameViewModel: GameViewModel) {
 
     NavHost(navController = navController, startDestination = "Home") {
         composable("Home") { Home(navController) }
-        composable("GameView") { GameView(navController) }
-        composable("ContinueGame") { ContinueGame(navController) }
+        composable("GameView") { GameView(navController, gameViewModel) }
+        composable("ContinueGame") { ContinueGame(navController, gameViewModel) }
         composable("History"){ History(navController, gameViewModel)}
     }
 }
