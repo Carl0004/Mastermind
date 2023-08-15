@@ -5,17 +5,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration
-import com.carlodecarolis.mastermind.logic.MyState
-import com.carlodecarolis.mastermind.logic.GameViewModel
+import androidx.navigation.NavController
 
 @Composable
-fun GameView(vm: GameViewModel) {
+fun GameView(navController: NavController) {
     val configuration = LocalConfiguration.current
 
     when (configuration.orientation) {
         Configuration.ORIENTATION_PORTRAIT -> {
             //TODO
-            Button(onClick = { vm.init() }) {
+            Button(onClick = { /*TODO*/ }) {
                 Text(text = "init")
             }
         }

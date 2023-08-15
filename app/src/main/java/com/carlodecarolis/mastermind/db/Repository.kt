@@ -1,19 +1,23 @@
 package com.carlodecarolis.mastermind.db
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class Repository(private val dao: MastermindDao) {
-
-    fun readAll(): Game? {
-        return dao.getAllGameHistory()
+    suspend fun readAll(): List<Game> {
+        return withContext(Dispatchers.IO) {
+            dao.getAllGameHistory()
+        }
     }
 
-    fun insert(game: Game){
-        CoroutineScope(Dispatchers.IO).launch{ dao.insertGameHistory(game) }
+    suspend fun insert(game: Game) {
+        withContext(Dispatchers.IO) {
+            dao.insertGameHistory(game)
+        }
     }
 
-    fun delete(game: Game){
-        CoroutineScope(Dispatchers.IO).launch{ dao.deleteGameHistory(game) }
+    suspend fun delete(game: Game) {
+        withContext(Dispatchers.IO) {
+            dao.deleteGameHistory(game)
+        }
     }
 }

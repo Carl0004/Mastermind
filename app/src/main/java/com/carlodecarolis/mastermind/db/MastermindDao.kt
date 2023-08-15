@@ -1,9 +1,6 @@
 package com.carlodecarolis.mastermind.db
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 
 @Dao
 interface MastermindDao {
@@ -13,7 +10,9 @@ interface MastermindDao {
     @Delete
     suspend fun deleteGameHistory(game: Game)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGameHistoryList(gameHistoryList: List<Game>)
 
-    @Query("SELECT * FROM game_history ORDER BY date DESC")
-    fun getAllGameHistory(): Game?
+    @Query("SELECT * FROM game_history")
+    fun getAllGameHistory(): List<Game>
 }

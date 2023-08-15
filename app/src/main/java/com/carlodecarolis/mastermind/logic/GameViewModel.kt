@@ -1,24 +1,36 @@
 package com.carlodecarolis.mastermind.logic
 
-import com.carlodecarolis.mastermind.logic.MyState.*
-import androidx.compose.runtime.mutableStateOf
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import com.carlodecarolis.mastermind.db.DBMastermind
+import com.carlodecarolis.mastermind.db.Game
 import com.carlodecarolis.mastermind.db.Repository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-class GameViewModel(instantGame: InstantGame, repository: Repository) {
-    var instantGame = instantGame
-    var state = mutableStateOf(Init)
-    var n = 0
+class GameViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository: Repository
 
-    //Funzioni di prova
-    fun init(){
-        state.value = Init
-        instantGame.newMatch()
-    }
-    fun new(){
-        state.value = NewGame
+    init {
+        val dao = DBMastermind.getInstance(application).daoGameHistory()
+        repository = Repository(dao)
     }
 
-    fun hi(){
-        state.value = History
+    suspend fun getAllGameHistory(): List<Game> {
+        return withContext(Dispatchers.IO) {
+            repository.readAll()
+        }
+    }
+
+    suspend fun insertGameHistory(game: Game) {
+        withContext(Dispatchers.IO) {
+            repository.insert(game)
+        }
+    }
+
+    suspend fun deleteGameHistory(game: Game) {
+        withContext(Dispatchers.IO) {
+            repository.delete(game)
+        }
     }
 }
