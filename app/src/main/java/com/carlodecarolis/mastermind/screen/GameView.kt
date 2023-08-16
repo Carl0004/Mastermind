@@ -34,6 +34,8 @@ fun GameView(
     val instantGame = remember { InstantGame(gameViewModel) }
     val userInputState = remember { mutableStateOf(TextFieldValue("")) }
     val feedbackState = remember { mutableStateOf("") }
+    val isGameFinished = remember { mutableStateOf(false) }
+    val isInputEnabled = remember { mutableStateOf(true) }
 
     val maxAttempts = instantGame.maxAttempts
 
@@ -60,7 +62,7 @@ fun GameView(
         OutlinedTextField(
             value = userInputState.value.text,
             onValueChange = { newValue ->
-                if (newValue.length <= 8) {
+                if (isInputEnabled.value && newValue.length <= 8) {
                     userInputState.value = TextFieldValue(newValue)
                 }
             },
@@ -77,9 +79,11 @@ fun GameView(
             ),
             keyboardActions = KeyboardActions(
                 onDone = {
-                    val result = instantGame.attempt(userInputState.value.text)
-                    feedbackState.value = result
-                    if (instantGame.isGameFinished) {
+                    if (isInputEnabled.value && !isGameFinished.value) {
+                        val result = instantGame.attempt(userInputState.value.text)
+                        feedbackState.value = result
+                        isGameFinished.value = instantGame.isGameFinished
+                        isInputEnabled.value = !isGameFinished.value
                         userInputState.value = TextFieldValue("") // Reset the input field
                     }
                 }
@@ -95,7 +99,7 @@ fun GameView(
             textAlign = TextAlign.Center
         )
 
-        if (instantGame.isGameFinished) {
+        if (isGameFinished.value) {
             Text(
                 text = "Secret Code: ${instantGame.secret}",
                 fontSize = 18.sp,
@@ -115,17 +119,19 @@ fun GameView(
                     onClick = {
                         instantGame.newMatch()
                         feedbackState.value = ""
+                        isGameFinished.value = false
+                        isInputEnabled.value = true
                     },
-                    enabled = !instantGame.isGameFinished
+                    enabled = !isGameFinished.value
                 ) {
                     Text(text = "New Game")
                 }
                 Button(
                     onClick = {
-                        runBlocking { instantGame.saveOnDb()} // Salva la partita nel database
+                        runBlocking { instantGame.saveOnDb() } // Salva la partita nel database
                         navController.navigate("Home") // Torna alla schermata Home
                     },
-                    enabled = !instantGame.isGameFinished
+                    enabled = !isGameFinished.value
                 ) {
                     Text(text = "Finish and Return Home")
                 }
