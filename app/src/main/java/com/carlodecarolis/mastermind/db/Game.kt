@@ -12,5 +12,6 @@ data class Game(
     val result: String, //Risultato partita
     val attempts: Int, //# di tentativi
     val duration: Long, //Tempo impiegato
-    val date: Long //Data partita
+    val date: Long, //Data partita
+    var isSelected: Boolean = false // per selezionare
 )

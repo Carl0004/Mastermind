@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Game::class], version = 1)
+@Database(entities = [Game::class], version = 2)
 abstract class DBMastermind : RoomDatabase(){
     abstract fun daoGameHistory() : MastermindDao
 
@@ -19,7 +19,9 @@ abstract class DBMastermind : RoomDatabase(){
                     context.applicationContext,
                     DBMastermind::class.java,
                     "game_history_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

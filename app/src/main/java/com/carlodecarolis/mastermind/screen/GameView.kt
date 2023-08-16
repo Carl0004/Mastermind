@@ -34,8 +34,8 @@ fun GameView(
     val instantGame = remember { InstantGame(gameViewModel) }
     val userInputState = remember { mutableStateOf(TextFieldValue("")) }
     val feedbackState = remember { mutableStateOf("") }
-    val isGameFinished = remember { mutableStateOf(false) }
     val isInputEnabled = remember { mutableStateOf(true) }
+    val isGameFinished = instantGame.isGameFinished // Usa il valore direttamente da InstantGame
 
     val maxAttempts = instantGame.maxAttempts
 
@@ -75,22 +75,25 @@ fun GameView(
             keyboardOptions = KeyboardOptions.Default.copy(
                 imeAction = ImeAction.Done,
                 keyboardType = KeyboardType.Text,
-                capitalization = KeyboardCapitalization.Characters
+                capitalization = KeyboardCapitalization.Characters,
             ),
+
             keyboardActions = KeyboardActions(
                 onDone = {
                     if (isInputEnabled.value && !isGameFinished.value) {
                         val result = instantGame.attempt(userInputState.value.text)
                         feedbackState.value = result
-                        isGameFinished.value = instantGame.isGameFinished
+                        isGameFinished.value = instantGame.isGameFinished.value
                         isInputEnabled.value = !isGameFinished.value
                         userInputState.value = TextFieldValue("") // Reset the input field
                     }
                 }
-            )
+            ),
+            enabled = isInputEnabled.value && !isGameFinished.value
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
 
         Text(
             text = feedbackState.value,
@@ -99,43 +102,27 @@ fun GameView(
             textAlign = TextAlign.Center
         )
 
-        if (isGameFinished.value) {
-            Text(
-                text = "Secret Code: ${instantGame.secret}",
-                fontSize = 18.sp,
-                color = Color.Gray,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                textAlign = TextAlign.Center
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Button(
-                    onClick = {
-                        instantGame.newMatch()
-                        feedbackState.value = ""
-                        isGameFinished.value = false
-                        isInputEnabled.value = true
-                    },
-                    enabled = !isGameFinished.value
-                ) {
-                    Text(text = "New Game")
-                }
-                Button(
-                    onClick = {
-                        runBlocking { instantGame.saveOnDb() } // Salva la partita nel database
-                        navController.navigate("Home") // Torna alla schermata Home
-                    },
-                    enabled = !isGameFinished.value
-                ) {
-                    Text(text = "Finish and Return Home")
-                }
-            }
+
+        Button(
+            onClick = {
+                instantGame.newMatch()
+                feedbackState.value = ""
+                // Imposta isGameFinished su false e abilita l'input
+                isGameFinished.value = false
+                isInputEnabled.value = true
+            },
+            enabled = !isGameFinished.value
+        ) {
+            Text(text = "New Game")
+        }
+        Button(
+            onClick = {
+                runBlocking { instantGame.saveOnDb() } // Salva la partita nel database
+                navController.navigate("Home") // Torna alla schermata Home
+            },
+            enabled = !isGameFinished.value
+        ) {
+            Text(text = "Finish and Return Home")
         }
     }
 }

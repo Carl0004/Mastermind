@@ -34,9 +34,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    suspend fun deleteGameHistory(game: Game) {
-        withContext(Dispatchers.IO) {
-            repository.delete(game)
+    suspend fun deleteAllGameHistory() {
+        // Implementa la logica per cancellare tutto lo storico delle partite dal database
+        repository.deleteAllGameHistory()
+    }
+
+    fun toggleGameSelection(game: Game) {
+        game.isSelected = !game.isSelected
+    }
+
+    suspend fun deleteSelectedGames(selectedGames: List<Game>) {
+        for (game in selectedGames) {
+            repository.deleteGameHistory(game)
         }
     }
 }

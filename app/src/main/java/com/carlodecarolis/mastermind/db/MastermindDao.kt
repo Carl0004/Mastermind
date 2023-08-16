@@ -10,6 +10,9 @@ interface MastermindDao {
     @Delete
     suspend fun deleteGameHistory(game: Game)
 
+    @Query("DELETE FROM game_history")
+    suspend fun deleteAllGameHistory()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertGameHistoryList(gameHistoryList: List<Game>)
 

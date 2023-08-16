@@ -1,5 +1,6 @@
 package com.carlodecarolis.mastermind.logic
 
+import androidx.compose.runtime.mutableStateOf
 import com.carlodecarolis.mastermind.db.Game
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +21,7 @@ class InstantGame(private val gameViewModel: GameViewModel){
     var duration = 0L
     var date = ""
 
-    var isGameFinished = false
+    var isGameFinished = mutableStateOf(false)
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
@@ -34,7 +35,7 @@ class InstantGame(private val gameViewModel: GameViewModel){
         attempts = 0
         duration = 0L
         date = formatDate(System.currentTimeMillis())
-        isGameFinished = false
+        isGameFinished.value = false
         startTime = System.currentTimeMillis() // Resetta il tempo all'inizio della partita
     }
 
@@ -46,13 +47,13 @@ class InstantGame(private val gameViewModel: GameViewModel){
         attempts++
 
         if (attempts >= maxAttempts) {
-            isGameFinished = true
+            isGameFinished.value = true
             saveOnDb()
             return "Game Over"
         }
 
         if (isCorrect(input)) {
-            isGameFinished = true
+            isGameFinished.value = true
             saveOnDb()
             return "Correct Combination!"
         }
