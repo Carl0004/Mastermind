@@ -19,9 +19,9 @@ import androidx.navigation.NavController
 import com.carlodecarolis.mastermind.logic.GameViewModel
 import com.carlodecarolis.mastermind.logic.InstantGame
 import com.carlodecarolis.mastermind.logic.utils.Attempt
-import com.carlodecarolis.mastermind.logic.utils.ColorUtils.getColorRes
 import com.carlodecarolis.mastermind.logic.utils.Feedback
 import com.carlodecarolis.mastermind.logic.utils.Options
+import com.carlodecarolis.mastermind.ui.theme.*
 
 
 @Composable
@@ -109,8 +109,18 @@ fun ColorCircle(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val colorRes = getColorRes(color)
-    val colorValue = Color(colorRes)
+    val colorValue = when (color) {
+        "W" -> white
+        "R" -> red
+        "C" -> cyan
+        "G" -> green
+        "Y" -> yellow
+        "P" -> purple
+        "O" -> orange
+        "B" -> blue
+        else -> black // Colore di default
+    }
+
     Box(
         modifier = Modifier
             .size(40.dp)
@@ -158,6 +168,17 @@ fun ColorButton(
     isSelected: Boolean,
     onColorSelected: () -> Unit
 ) {
+    val colorValue = when (color) {
+        "W" -> white
+        "R" -> red
+        "C" -> cyan
+        "G" -> green
+        "Y" -> yellow
+        "P" -> purple
+        "O" -> orange
+        "B" -> blue
+        else -> black // Colore di default
+    }
 
     Box(
         modifier = Modifier
@@ -172,7 +193,7 @@ fun ColorButton(
                 modifier = Modifier
                     .size(36.dp)
                     .background(
-                        color = Color(getColorRes(color)),
+                        color = colorValue,
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center,

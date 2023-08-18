@@ -7,7 +7,7 @@ object ColorUtils {
     fun getColorRes(color: String): Int {
         return when (color) {
             "W" -> R.color.white
-            "R" -> R.color.red
+            "R" -> R.color.cdnkncd
             "C" -> R.color.cyan
             "G" -> R.color.green
             "Y" -> R.color.yellow
