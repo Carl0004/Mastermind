@@ -24,8 +24,6 @@ fun Home(navController: NavController){
         )
         HomeButton(text = "New Game", onClick = {navController.navigate("GameView")})
         Spacer(modifier = Modifier.height(16.dp))
-        HomeButton(text = "Continue", onClick = {navController.navigate("ContinueGame")})
-        Spacer(modifier = Modifier.height(16.dp))
         HomeButton(text = "Game History", onClick = {navController.navigate("History")})
     }
 }

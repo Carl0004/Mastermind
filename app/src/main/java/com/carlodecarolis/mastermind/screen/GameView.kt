@@ -1,130 +1,205 @@
 package com.carlodecarolis.mastermind.screen
 
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.carlodecarolis.mastermind.db.Game
 import com.carlodecarolis.mastermind.logic.GameViewModel
 import com.carlodecarolis.mastermind.logic.InstantGame
-import kotlinx.coroutines.runBlocking
+import com.carlodecarolis.mastermind.logic.utils.Attempt
+import com.carlodecarolis.mastermind.logic.utils.ColorUtils.getColorRes
+import com.carlodecarolis.mastermind.logic.utils.Feedback
+import com.carlodecarolis.mastermind.logic.utils.Options
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun GameView(
     navController: NavController,
     gameViewModel: GameViewModel
 ) {
     val instantGame = remember { InstantGame(gameViewModel) }
-    val userInputState = remember { mutableStateOf(TextFieldValue("")) }
-    val feedbackState = remember { mutableStateOf("") }
-    val isInputEnabled = remember { mutableStateOf(true) }
-    val isGameFinished = instantGame.isGameFinished // Usa il valore direttamente da InstantGame
 
-    val maxAttempts = instantGame.maxAttempts
+    val selectedColors = remember { mutableStateListOf<String>() }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(16.dp)
     ) {
-        Text(
-            text = "Mastermind",
-            fontWeight = FontWeight.Bold,
-            fontSize = 24.sp,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        Text(
-            text = "Attempts: ${instantGame.attempts}/$maxAttempts",
-            fontSize = 18.sp,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        OutlinedTextField(
-            value = userInputState.value.text,
-            onValueChange = { newValue ->
-                if (isInputEnabled.value && newValue.length <= 8) {
-                    userInputState.value = TextFieldValue(newValue)
-                }
-            },
-            label = { Text(text = "Enter the combination") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp),
-            textStyle = TextStyle(fontSize = 16.sp),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Done,
-                keyboardType = KeyboardType.Text,
-                capitalization = KeyboardCapitalization.Characters,
-            ),
-
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    if (isInputEnabled.value && !isGameFinished.value) {
-                        val result = instantGame.attempt(userInputState.value.text)
-                        feedbackState.value = result
-                        isGameFinished.value = instantGame.isGameFinished.value
-                        isInputEnabled.value = !isGameFinished.value
-                        userInputState.value = TextFieldValue("") // Reset the input field
-                    }
-                }
-            ),
-            enabled = isInputEnabled.value && !isGameFinished.value
-        )
+        // Area di gioco con tentativi
+        GameArea(instantGame.attempts)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-
-        Text(
-            text = feedbackState.value,
-            color = if (feedbackState.value == "Correct Combination!") Color.Green else Color.Red,
-            fontSize = 18.sp,
-            textAlign = TextAlign.Center
-        )
-
-
-        Button(
-            onClick = {
-                instantGame.newMatch()
-                feedbackState.value = ""
-                // Imposta isGameFinished su false e abilita l'input
-                isGameFinished.value = false
-                isInputEnabled.value = true
-            },
-            enabled = !isGameFinished.value
-        ) {
-            Text(text = "New Game")
+        // Sezione di selezione dei colori
+        Spacer(modifier = Modifier.weight(1f)) // Spazio flessibile che occupa lo spazio rimanente
+        ColorSelection(selectedColors, instantGame.colorOptions) { color ->
+            if (selectedColors.size < 8) {
+                selectedColors.add(color)
+            }
         }
+
         Button(
             onClick = {
-                runBlocking { instantGame.saveOnDb() } // Salva la partita nel database
-                navController.navigate("Home") // Torna alla schermata Home
+                if (selectedColors.size == 8) {
+                    val optionsList = selectedColors.map { Options(it, isSelected = 1) }
+                    instantGame.attempt(optionsList)
+                }
             },
-            enabled = !isGameFinished.value
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp),
+            enabled = selectedColors.size == 8
         ) {
-            Text(text = "Finish and Return Home")
+            Text(text = "Submit")
         }
     }
 }
 
-//TODO Risolvere i pulsanti che non sono cliccabili a fine partita e i tentativi che non funzionano
+
+@Composable
+fun GameArea(attempts: List<Attempt>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        attempts.reversed().forEach { attempt ->
+            AttemptRow(attempt)
+        }
+    }
+}
+
+@Composable
+fun AttemptRow(attempt: Attempt) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        attempt.colors.forEach { color ->
+            ColorCircle(
+                color = color.color,
+                isSelected = false, // Imposta isSelected a false per i cerchi nei tentativi
+                onClick = {} // Non è necessario un onClick per i cerchi nei tentativi
+            )
+        }
+        attempt.feedback.forEach { feedback ->
+            FeedbackCircle(feedback)
+        }
+    }
+}
+
+@Composable
+fun ColorCircle(
+    color: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val colorRes = getColorRes(color)
+    val colorValue = Color(colorRes)
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .padding(4.dp)
+            .background(color = colorValue)
+            .border(3.dp, Color.Black, shape = CircleShape)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .background(Color.White, CircleShape)
+            )
+        }
+    }
+}
+
+@Composable
+fun ColorSelection(
+    selectedColors: MutableList<String>,
+    colorOptions: List<String>,
+    onColorSelected: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        for (colorOption in colorOptions) {
+            ColorButton(
+                color = colorOption,
+                isSelected = selectedColors.contains(colorOption),
+                onColorSelected = { onColorSelected(colorOption) }
+            )
+        }
+    }
+}
+
+@Composable
+fun ColorButton(
+    color: String,
+    isSelected: Boolean,
+    onColorSelected: () -> Unit
+) {
+
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .padding(4.dp)
+            .clickable {
+                onColorSelected()
+            },
+        contentAlignment = Alignment.Center,
+        content = {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(
+                        color = Color(getColorRes(color)),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center,
+                content = {
+                    if (isSelected) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = Color.White
+                        )
+                    }
+                }
+            )
+        }
+    )
+}
+
+@Composable
+fun FeedbackCircle(feedback: Feedback, modifier: Modifier = Modifier) {
+    val circleColor = when (feedback) {
+        Feedback.CORRECT_COLOR_WRONG_POSITION -> Color.Gray
+        Feedback.CORRECT_COLOR_CORRECT_POSITION -> Color.Black
+    }
+
+    Box(
+        modifier = modifier
+            .size(16.dp)
+            .background(circleColor, CircleShape)
+    )
+}

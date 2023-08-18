@@ -29,9 +29,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     suspend fun getNextId(): Long {
-        return withContext(Dispatchers.IO) {
-            repository.getNextId()
-        }
+        val nextId = repository.getNextId() ?: 1L // Usa un valore di fallback
+        return nextId
     }
 
     suspend fun deleteAllGameHistory() {
