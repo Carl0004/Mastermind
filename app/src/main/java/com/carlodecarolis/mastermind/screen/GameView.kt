@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,19 +39,23 @@ fun GameView(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Area di gioco con tentativi
-        GameArea(instantGame.attempts)
+        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.weight(1f))
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // Area di gioco con tentativi
+        GameArea(instantGame.attempts, selectedColors)
+
 
         // Sezione di selezione dei colori
-        Spacer(modifier = Modifier.weight(1f)) // Spazio flessibile che occupa lo spazio rimanente
         ColorSelection(selectedColors, instantGame.colorOptions) { color ->
             if (selectedColors.size < 8) {
                 selectedColors.add(color)
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Pulsante Submit
         Button(
             onClick = {
                 if (selectedColors.size == 8) {
@@ -59,48 +64,92 @@ fun GameView(
                 }
             },
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            enabled = selectedColors.size == 8
+                .fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = ocra),
         ) {
-            Text(text = "Submit")
+            Text(
+                text = "Submit",
+                color = Black200
+            )
         }
+
+
     }
 }
 
-
 @Composable
-fun GameArea(attempts: List<Attempt>) {
+fun GameArea(
+    attempts: List<Attempt>,
+    selectedColors: List<String>
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(8.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        attempts.reversed().forEach { attempt ->
-            AttemptRow(attempt)
+        // Griglia di cerchi per i tentativi
+        for (rowIndex in 0 until 10) {
+            val reversedIndex = 9 - rowIndex // Inverti l'indice per posizionare la prima riga in basso
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                for (colIndex in 0 until 8) {
+                    val attemptIndex = reversedIndex * 8 + colIndex
+                    val isSelected = rowIndex >= selectedColors.size
+                    if (attemptIndex < attempts.size) {
+                        val attempt = attempts[attemptIndex]
+                        val colors = if (isSelected) attempt.colors else List(4) { selectedColors.getOrNull(rowIndex) ?: "" }
+                        AttemptCircleRow(colors, isSelected)
+                    } else {
+                        EmptyCircle(selectedColors.getOrNull(rowIndex))
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-fun AttemptRow(attempt: Attempt) {
+fun AttemptCircleRow(colors: List<Any>, isSelected: Boolean) {
     Row(
+        horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        attempt.colors.forEach { color ->
+        colors.forEach { color ->
             ColorCircle(
-                color = color.color,
-                isSelected = false, // Imposta isSelected a false per i cerchi nei tentativi
-                onClick = {} // Non è necessario un onClick per i cerchi nei tentativi
+                color = color as String,
+                isSelected = isSelected,
+                onClick = {}
             )
         }
-        attempt.feedback.forEach { feedback ->
-            FeedbackCircle(feedback)
-        }
     }
+}
+
+@Composable
+fun EmptyCircle(selectedColor: String?) {
+    val colorValue = when (selectedColor) {
+        "W" -> white
+        "R" -> red
+        "C" -> cyan
+        "G" -> green
+        "Y" -> yellow
+        "P" -> purple
+        "O" -> orange
+        "B" -> blue
+        else -> Color.Transparent
+    }
+
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .background(color = colorValue)
+            .border(3.dp, Color.Black, shape = CircleShape)
+    )
 }
 
 @Composable
@@ -160,7 +209,21 @@ fun ColorSelection(
             )
         }
     }
+
+    // Aggiorna i cerchi vuoti immediatamente quando viene selezionato un colore
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        for (i in 0 until 8) {
+            val color = if (i < selectedColors.size) selectedColors[i] else ""
+            EmptyCircle(color)
+        }
+    }
 }
+
 
 @Composable
 fun ColorButton(
@@ -202,7 +265,7 @@ fun ColorButton(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
-                            tint = Color.White
+                            tint = Black200
                         )
                     }
                 }

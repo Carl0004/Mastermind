@@ -19,3 +19,4 @@ val orange = Color(0xFFFFA500)
 val blue = Color(0xFF0000FF)
 val black = Color(0xFF000000)
 
+val ocra = Color(0xFFf0bf61)

@@ -3,6 +3,8 @@ package com.carlodecarolis.mastermind
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -12,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.carlodecarolis.mastermind.db.DBMastermind
 import com.carlodecarolis.mastermind.logic.GameViewModel
 import com.carlodecarolis.mastermind.screen.MainScreen
+import com.carlodecarolis.mastermind.ui.theme.Black200
 import com.carlodecarolis.mastermind.ui.theme.MastermindTheme
 
 
@@ -36,6 +39,7 @@ fun AppContent(gameViewModel: GameViewModel) {
     MastermindTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
+            color = Black200
         ) {
             MainScreen(gameViewModel)
         }
