@@ -2,6 +2,7 @@ package com.carlodecarolis.mastermind.screen
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -9,9 +10,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,8 +38,8 @@ fun GameView(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Spacer(modifier = Modifier.weight(1f))
-        Spacer(modifier = Modifier.weight(1f))
+
+        Spacer(modifier = Modifier.weight(2f))
 
         // Area di gioco con tentativi
         GameArea(instantGame.attempts, selectedColors)
@@ -77,6 +76,7 @@ fun GameView(
     }
 }
 
+
 @Composable
 fun GameArea(
     attempts: List<Attempt>,
@@ -85,27 +85,18 @@ fun GameArea(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        // Griglia di cerchi per i tentativi
         for (rowIndex in 0 until 10) {
-            val reversedIndex = 9 - rowIndex // Inverti l'indice per posizionare la prima riga in basso
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                for (colIndex in 0 until 8) {
-                    val attemptIndex = reversedIndex * 8 + colIndex
-                    val isSelected = rowIndex >= selectedColors.size
-                    if (attemptIndex < attempts.size) {
-                        val attempt = attempts[attemptIndex]
-                        val colors = if (isSelected) attempt.colors else List(4) { selectedColors.getOrNull(rowIndex) ?: "" }
-                        AttemptCircleRow(colors, isSelected)
-                    } else {
-                        EmptyCircle(selectedColors.getOrNull(rowIndex))
-                    }
+                for (i in 0 until 8) {
+                    val color = if (i < selectedColors.size) selectedColors[i] else ""
+                    EmptyCircle(color)
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -113,22 +104,7 @@ fun GameArea(
     }
 }
 
-@Composable
-fun AttemptCircleRow(colors: List<Any>, isSelected: Boolean) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        colors.forEach { color ->
-            ColorCircle(
-                color = color as String,
-                isSelected = isSelected,
-                onClick = {}
-            )
-        }
-    }
-}
+
 
 @Composable
 fun EmptyCircle(selectedColor: String?) {
@@ -147,7 +123,7 @@ fun EmptyCircle(selectedColor: String?) {
     Box(
         modifier = Modifier
             .size(40.dp)
-            .background(color = colorValue)
+            .background(color = colorValue, shape = CircleShape)
             .border(3.dp, Color.Black, shape = CircleShape)
     )
 }
@@ -209,20 +185,8 @@ fun ColorSelection(
             )
         }
     }
-
-    // Aggiorna i cerchi vuoti immediatamente quando viene selezionato un colore
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        for (i in 0 until 8) {
-            val color = if (i < selectedColors.size) selectedColors[i] else ""
-            EmptyCircle(color)
-        }
-    }
 }
+
 
 
 @Composable

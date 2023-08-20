@@ -2,10 +2,15 @@ package com.carlodecarolis.mastermind.logic
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.carlodecarolis.mastermind.db.DBMastermind
 import com.carlodecarolis.mastermind.db.Game
 import com.carlodecarolis.mastermind.db.Repository
+import com.carlodecarolis.mastermind.logic.utils.Attempt
+import com.carlodecarolis.mastermind.logic.utils.Options
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
@@ -22,7 +27,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-   suspend fun insertGameHistory(game: Game) {
+    suspend fun insertGameHistory(game: Game) {
         withContext(Dispatchers.IO) {
             repository.insert(game)
         }

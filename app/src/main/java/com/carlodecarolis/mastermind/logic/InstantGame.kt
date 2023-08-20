@@ -3,6 +3,7 @@ package com.carlodecarolis.mastermind.logic
 import androidx.compose.runtime.mutableStateOf
 import com.carlodecarolis.mastermind.db.Game
 import com.carlodecarolis.mastermind.logic.utils.Attempt
+import com.carlodecarolis.mastermind.logic.utils.Feedback
 import com.carlodecarolis.mastermind.logic.utils.Options
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -81,7 +82,7 @@ class InstantGame(private val gameViewModel: GameViewModel) {
         return currentId++
     }
 
-    private fun isCorrect(input: List<Options>): Boolean {
+    fun isCorrect(input: List<Options>): Boolean {
         val inputColors = input.map { it.color }
         return inputColors == secret.toList()
     }
@@ -108,3 +109,4 @@ class InstantGame(private val gameViewModel: GameViewModel) {
         return dateFormat.format(calendar.time)
     }
 }
+

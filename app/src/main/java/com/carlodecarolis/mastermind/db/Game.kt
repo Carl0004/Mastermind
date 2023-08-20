@@ -9,9 +9,9 @@ data class Game(
     val id: Long,
     val version: String, //Versione app
     val secretCode: String, //Codice segreto partita
-    val result: String, //Risultato partita
-    val attempts: Int, //# di tentativi
-    val duration: Long, //Tempo impiegato
+    var result: String, //Risultato partita
+    var attempts: Int, //# di tentativi
+    var duration: Long, //Tempo impiegato
     val date: Long, //Data partita
     var isSelected: Boolean = false // per selezionare
 )
