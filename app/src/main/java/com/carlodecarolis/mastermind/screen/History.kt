@@ -13,7 +13,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.carlodecarolis.mastermind.db.Game
-import com.carlodecarolis.mastermind.logic.GameViewModel
+import com.carlodecarolis.mastermind.logic.MyViewModel
+import com.carlodecarolis.mastermind.ui.theme.Black200
+import com.carlodecarolis.mastermind.ui.theme.ocra
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -21,7 +23,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun History(navController: NavController, gameViewModel: GameViewModel) {
+fun History(navController: NavController, gameViewModel: MyViewModel) {
     var gameHistoryList by remember { mutableStateOf<List<Game>>(emptyList()) }
     var selectedCount by remember { mutableStateOf(0) }
 
@@ -73,9 +75,13 @@ fun History(navController: NavController, gameViewModel: GameViewModel) {
                         gameHistoryList = gameHistoryList.filterNot { it.isSelected }
                         selectedCount = 0
                     }
-                }
-            ) {
-                Text(text = "Delete Selected")
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = ocra),
+                ) {
+                Text(
+                    text = "Delete Selected",
+                    color = Black200
+                )
             }
         }
     }
@@ -84,7 +90,7 @@ fun History(navController: NavController, gameViewModel: GameViewModel) {
 @Composable
 fun GameHistoryItemRow(
     gameHistory: Game,
-    gameViewModel: GameViewModel,
+    gameViewModel: MyViewModel,
     onSelectedChanged: (Boolean) -> Unit
     ) {
     Card(

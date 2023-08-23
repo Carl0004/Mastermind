@@ -11,13 +11,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.carlodecarolis.mastermind.logic.MyViewModel
+import com.carlodecarolis.mastermind.logic.utils.GameState
 import com.carlodecarolis.mastermind.ui.theme.Black200
 import com.carlodecarolis.mastermind.ui.theme.ocra
 import com.carlodecarolis.mastermind.ui.theme.white
 
 
 @Composable
-fun Home(navController: NavController){
+fun Home(vm: MyViewModel, navController: NavController){
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -29,7 +31,10 @@ fun Home(navController: NavController){
             color = white,
             fontWeight = FontWeight.Bold
         )
-        HomeButton(text = "New Game", onClick = {navController.navigate("GameView")})
+        HomeButton(text = if (vm.instantGame.status.value == GameState.Ongoing) "Continue" else "New Game") {
+            vm.newGame()
+            navController.navigate("GameView")
+        }
         Spacer(modifier = Modifier.height(16.dp))
         HomeButton(text = "Game History", onClick = {navController.navigate("History")})
     }

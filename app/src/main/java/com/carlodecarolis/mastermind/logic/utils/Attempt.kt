@@ -1,6 +1,7 @@
 package com.carlodecarolis.mastermind.logic.utils
 
 data class Attempt(
-    val colors: List<Options>,
-    val feedback: List<Feedback>
+    val guess : String,
+    val rightNumRightPos : Int,
+    val rightNumWrongPos: Int
 )

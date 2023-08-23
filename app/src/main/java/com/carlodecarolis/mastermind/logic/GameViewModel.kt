@@ -1,50 +1,44 @@
 package com.carlodecarolis.mastermind.logic
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.carlodecarolis.mastermind.db.DBMastermind
 import com.carlodecarolis.mastermind.db.Game
 import com.carlodecarolis.mastermind.db.Repository
-import com.carlodecarolis.mastermind.logic.utils.Attempt
-import com.carlodecarolis.mastermind.logic.utils.Options
+import com.carlodecarolis.mastermind.logic.utils.GameState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.absoluteValue
 
-class GameViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: Repository
+class MyViewModel(inGame: InstantGame, repo: Repository) {
+    val instantGame : InstantGame
+    val repository : Repository
+    //var state = mutableStateOf(Init)
+    var n = 0
 
     init {
-        val dao = DBMastermind.getInstance(application).daoGameHistory()
-        repository = Repository(dao)
+        instantGame = inGame
+        repository = repo
+    }
+
+    fun newGame(){
+        if (instantGame.status.value != GameState.Ongoing) {
+            instantGame.newMatch()
+
+            CoroutineScope(Dispatchers.Default).launch {
+                while (true) {
+                    if (instantGame.status.value == GameState.Ongoing)
+                        instantGame.duration.value =
+                            System.currentTimeMillis() - instantGame.startTime.absoluteValue
+                    Thread.sleep(500)
+                }
+            }
+        }
     }
 
     suspend fun getAllGameHistory(): List<Game> {
         return withContext(Dispatchers.IO) {
             repository.readAll()
         }
-    }
-
-    suspend fun insertGameHistory(game: Game) {
-        withContext(Dispatchers.IO) {
-            repository.insert(game)
-        }
-    }
-
-    suspend fun getNextId(): Long {
-        val nextId = repository.getNextId() ?: 1L // Usa un valore di fallback
-        return nextId
-    }
-
-    suspend fun deleteAllGameHistory() {
-        // Implementa la logica per cancellare tutto lo storico delle partite dal database
-        repository.deleteAllGameHistory()
-    }
-
-    fun toggleGameSelection(game: Game) {
-        game.isSelected = !game.isSelected
     }
 
     suspend fun deleteSelectedGames(selectedGames: List<Game>) {

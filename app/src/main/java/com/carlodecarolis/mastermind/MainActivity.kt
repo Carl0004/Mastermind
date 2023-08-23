@@ -3,38 +3,43 @@ package com.carlodecarolis.mastermind
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.ViewModelProvider
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.compose.rememberNavController
 import com.carlodecarolis.mastermind.db.DBMastermind
-import com.carlodecarolis.mastermind.logic.GameViewModel
+import com.carlodecarolis.mastermind.db.Repository
+import com.carlodecarolis.mastermind.logic.InstantGame
+import com.carlodecarolis.mastermind.logic.MyViewModel
 import com.carlodecarolis.mastermind.screen.MainScreen
 import com.carlodecarolis.mastermind.ui.theme.Black200
 import com.carlodecarolis.mastermind.ui.theme.MastermindTheme
 
 
 class MainActivity : ComponentActivity() {
-    private lateinit var gameViewModel: GameViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val db = DBMastermind.getInstance(applicationContext)
-        gameViewModel = ViewModelProvider(this)[GameViewModel::class.java]
-
         setContent {
-            AppContent(gameViewModel)
+            MastermindTheme {
+                val context = LocalContext.current
+                val db =  DBMastermind.getInstance(context)
+                val repository = Repository(db.daoGameHistory())
+                val instantGame = InstantGame(repository)
+                //val vm : MyViewModel = ViewModelProvider(this)[MyViewModel(instantGame,repository,Application())::class.java]
+                val vm = MyViewModel(instantGame, repository)
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = Black200
+                ) {
+                    MainScreen(vm)
+                }
+            }
         }
-
-
     }
 }
 
-@Composable
+/*@Composable
 fun AppContent(gameViewModel: GameViewModel) {
     MastermindTheme {
         Surface(
@@ -44,5 +49,5 @@ fun AppContent(gameViewModel: GameViewModel) {
             MainScreen(gameViewModel)
         }
     }
-}
+}*/
 
