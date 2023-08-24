@@ -14,6 +14,7 @@ class MyViewModel(inGame: InstantGame, repo: Repository) {
     val repository : Repository
     //var state = mutableStateOf(Init)
     var n = 0
+    var isDatabaseSaved = false
 
     init {
         instantGame = inGame
@@ -23,7 +24,7 @@ class MyViewModel(inGame: InstantGame, repo: Repository) {
     fun newGame(){
         if (instantGame.status.value != GameState.Ongoing) {
             instantGame.newMatch()
-
+            isDatabaseSaved = false
             CoroutineScope(Dispatchers.Default).launch {
                 while (true) {
                     if (instantGame.status.value == GameState.Ongoing)

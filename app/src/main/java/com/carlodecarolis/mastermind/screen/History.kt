@@ -130,7 +130,7 @@ fun GameHistoryItemRow(
                 onCheckedChange = { isSelected ->
                     onSelectedChanged(isSelected)
                     gameHistory.isSelected = isSelected
-                }
+                },
             )
         }
     }

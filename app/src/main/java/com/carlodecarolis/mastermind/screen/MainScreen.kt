@@ -14,6 +14,7 @@ fun MainScreen(gameViewModel: MyViewModel) {
         composable("Home") { Home(gameViewModel, navController) }
         composable("GameView") { GameView(navController, gameViewModel) }
         composable("History"){ History(navController, gameViewModel)}
+        composable("Settings") {Settings(gameViewModel, navController)}
     }
 }
 

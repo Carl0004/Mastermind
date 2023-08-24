@@ -1,6 +1,7 @@
 package com.carlodecarolis.mastermind.screen
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -16,6 +17,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -108,7 +110,7 @@ fun GameView(navController: NavHostController, vm: MyViewModel) {
                 }
             }
 
-            if (vm.instantGame.attempts.size >= 10) {
+            if (vm.instantGame.isGameFinished.value && !vm.isDatabaseSaved) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -124,7 +126,7 @@ fun GameView(navController: NavHostController, vm: MyViewModel) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Codice Segreto:",
+                            text = "Secret Code:",
                             color = Color.Black,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
@@ -167,6 +169,10 @@ fun GameView(navController: NavHostController, vm: MyViewModel) {
                         }
                     }
                 }
+
+                vm.instantGame.saveOnDb(vm.repository)
+                vm.isDatabaseSaved = true
+                Log.d("Debug", "GameView called. isGameFinished: ${vm.instantGame.isGameFinished}")
             }
         }
     }
@@ -214,67 +220,6 @@ fun ButtonGuess(
 }
 
 
-/*@Composable
-fun GameArea(
-    instantGame: InstantGame,
-    selectedColors: List<String>,
-    onClick: (Int) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-    ) {
-        for (rowIndex in 0 until 10) {
-            if (rowIndex == instantGame.attempts.size){
-                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                        .border(BorderStroke(3.dp, Color.Black), shape = RoundedCornerShape(15.dp)) ,
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    if (rowIndex < instantGame.attempts.size) {
-                        for (i in 0 until 5) {
-                            EmptyCircle(instantGame.attempts[rowIndex].guess.get(i).toString()){}
-                        }
-                    }else if (rowIndex == instantGame.attempts.size){
-                        for (i in 0 until 5){
-                            EmptyCircle(selectedColors[i], onClick = { onClick(i) })
-                        }
-                    }else{
-                        for (i in 0 until 5) {
-                            EmptyCircle(selectedColor = "X") {}
-                        }
-                    }
-                }
-            }else{
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    if (rowIndex < instantGame.attempts.size) {
-                        for (i in 0 until 5) {
-                            EmptyCircle(instantGame.attempts[rowIndex].guess.get(i).toString()){}
-                        }
-                    }else if (rowIndex == instantGame.attempts.size){
-                        for (i in 0 until 5){
-                            EmptyCircle(selectedColors[i], onClick = { onClick(i) })
-                        }
-                    }else{
-                        for (i in 0 until 5)  {
-                            EmptyCircle(selectedColor = "X"){}
-                        }
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-    }
-}*/
-
 @Composable
 fun GameArea(
     instantGame: InstantGame,
@@ -297,46 +242,164 @@ fun GameArea(
                 else -> -1 // Segnaposto se il tentativo non è ancora stato effettuato
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween // Aggiunto questo
-            ) {
-                // Feedback a sinistra (colorato di rosso)
-                Text(
-                    text = if (feedbackWrong >= 0) feedbackWrong.toString() else "",
-                    color = Color.Red,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+            if (!instantGame.isGameFinished.value) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween // Aggiunto questo
+                ) {
+                    // Feedback a sinistra (colorato di rosso)
+                    Text(
+                        text = if (feedbackWrong >= 0) feedbackWrong.toString() else "",
+                        color = Color.Red,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
 
-                if (rowIndex < instantGame.attempts.size) {
-                    for (i in 0 until 5) {
-                        EmptyCircle(instantGame.attempts[rowIndex].guess.get(i).toString()){}
+                    if (rowIndex < instantGame.attempts.size) {
+                        for (i in 0 until 5) {
+                            EmptyCircle(instantGame.attempts[rowIndex].guess.get(i).toString()){}
+                        }
+                    } else if (rowIndex == instantGame.attempts.size) {
+                        for (i in 0 until 5) {
+                            EmptyCircle(selectedColors[i], onClick = { onClick(i) })
+                        }
+                    } else {
+                        for (i in 0 until 5) {
+                            EmptyCircle(selectedColor = "X") {}
+                        }
                     }
-                } else if (rowIndex == instantGame.attempts.size) {
-                    for (i in 0 until 5) {
-                        EmptyCircle(selectedColors[i], onClick = { onClick(i) })
-                    }
-                } else {
-                    for (i in 0 until 5) {
-                        EmptyCircle(selectedColor = "X") {}
-                    }
+
+                    // Feedback a destra (colorato di blu)
+                    Text(
+                        text = if (feedbackRight >= 0) feedbackRight.toString() else "",
+                        color = Color.Blue,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-
-                // Feedback a destra (colorato di blu)
-                Text(
-                    text = if (feedbackRight >= 0) feedbackRight.toString() else "",
-                    color = Color.Blue,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Spacer(modifier = Modifier.height(8.dp))
+            } else {
             }
-            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
+
+/*@Composable
+fun GameArea(
+    attempts: List<Attempt>,
+    selectedColors: List<String>,
+    onClick: (Int) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+    ) {
+        for (rowIndex in 0 until 10) {
+            val myModifier: Modifier = if (rowIndex == attempts.size) {
+                Modifier
+                    .fillMaxWidth(0.8f)
+                    .padding(2.dp)
+                    .border(BorderStroke(2.dp, ocra), shape = RoundedCornerShape(15.dp))
+            } else
+                Modifier
+                    .fillMaxWidth(0.8f)
+                    .padding(2.dp)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    modifier = myModifier,
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (rowIndex < attempts.size) {
+                        for (i in 0 until 5) {
+                            EmptyCircle(attempts[rowIndex].guess.get(i).toString()) {}
+                        }
+                    } else if (rowIndex == attempts.size) {
+                        for (i in 0 until 5)
+                            EmptyCircle(selectedColors[i], onClick = { onClick(i) })
+                    } else {
+                        for (i in 0 until 5)
+                            EmptyCircle(selectedColor = "X") {}
+                    }
+                }
+
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.5f),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (rowIndex < attempts.size)
+                        FeedBack(
+                            attempts[rowIndex].rightNumRightPos,
+                            attempts[rowIndex].rightNumWrongPos
+                        )
+                    else
+                        FeedBack(0, 0)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FeedBack(nrr: Int, nrw: Int) {
+    Canvas(modifier = Modifier
+        .size(50.dp)
+    ) {
+        val radius = 5.dp.toPx()
+        val circle = mutableStateListOf<Color>(W,W,W,W,W)
+
+        for (i in 0 until nrr)
+            circle[i] = Blue5
+        for (i in nrr until nrr+nrw)
+            circle[i] = Blue3
+        for (i in nrr+nrw until 5)
+            circle[i] = Color.Transparent
+
+
+        translate(left = -30f, top = -15f) {
+            drawCircle(
+                color = circle[0],
+                radius = radius,
+            )
+        }
+        translate(left = 0f, top = -15f) {
+            drawCircle(
+                color = circle[1],
+                radius = radius,
+            )
+        }
+        translate(left = 30f, top = -15f) {
+            drawCircle(
+                color = circle[2],
+                radius = radius,
+            )
+        }
+        translate(left = -15f, top = 15f) {
+            drawCircle(
+                color = circle[3],
+                radius = radius
+            )
+        }
+        translate(left = 15f, top = 15f) {
+            drawCircle(
+                color = circle[4],
+                radius = radius
+            )
+        }
+    }
+
+}*/
+
 
 
 
