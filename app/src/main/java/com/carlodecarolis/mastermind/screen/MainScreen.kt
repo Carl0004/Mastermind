@@ -13,7 +13,7 @@ fun MainScreen(gameViewModel: MyViewModel) {
     NavHost(navController = navController, startDestination = "Home") {
         composable("Home") { Home(gameViewModel, navController) }
         composable("GameView") { GameView(navController, gameViewModel) }
-        composable("History"){ History(navController, gameViewModel)}
+        composable("History"){ History(gameViewModel)}
         composable("Settings") {Settings(gameViewModel, navController)}
     }
 }

@@ -1,13 +1,14 @@
 package com.carlodecarolis.mastermind.screen
 
-import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,7 +69,7 @@ fun Settings(vm: MyViewModel, navController: NavController) {
                 Text(
                     text = difficulty.name,
                     color = W,
-                    fontSize = 10.sp
+                    fontSize = 20.sp
                 )
             }
         }
@@ -84,7 +85,7 @@ fun Settings(vm: MyViewModel, navController: NavController) {
             colors = ButtonDefaults.buttonColors(containerColor = ocra)
         ) {
             Text(
-                text = "Salva",
+                text = "Save",
                 color = Black200,
                 fontWeight = FontWeight.Bold
             )

@@ -1,6 +1,5 @@
 package com.carlodecarolis.mastermind.logic
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -10,7 +9,9 @@ import com.carlodecarolis.mastermind.db.Repository
 import com.carlodecarolis.mastermind.logic.utils.Attempt
 import com.carlodecarolis.mastermind.logic.utils.GameState
 import com.carlodecarolis.mastermind.screen.Difficulty
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -20,12 +21,12 @@ class InstantGame(private val repository: Repository) {
     var attempts = mutableStateListOf<Attempt>()
     var startTime = System.currentTimeMillis()
     var duration =  mutableStateOf(0L)
-    var date = mutableStateOf("")
+    private var date = mutableStateOf("")
     var isGameFinished = mutableStateOf(false)
     var status = mutableStateOf(GameState.Load)
-    var life = mutableStateOf(10)
-    var currentId: Long = -1L
-    val colorOptions = listOf("W", "R", "C", "G", "Y", "P", "O", "B")
+    private var life = mutableStateOf(10)
+    private var currentId: Long = -1L
+    val colorOptions = mutableListOf("W", "R", "C", "G", "Y", "P", "O", "B")
     var difficulty by mutableStateOf(Difficulty.Normal)
 
     init {
@@ -36,7 +37,7 @@ class InstantGame(private val repository: Repository) {
 
 
     fun newMatch() {
-        secret.value = generateRandomSecret()
+        secret.value = generateRandomSecret(difficulty)
         attempts.clear() // Resetta la lista di tentativi
         duration.value = 0L
         date.value = formatDate(System.currentTimeMillis())
@@ -45,13 +46,25 @@ class InstantGame(private val repository: Repository) {
         life.value = 10
         status.value = GameState.Ongoing
     }
-    private fun generateRandomSecret(): String {
-        return buildString {
-            repeat(5) {
-                append(colorOptions.random())
+
+    private fun generateRandomSecret(difficulty: Difficulty): String {
+        return if (difficulty == Difficulty.Normal) {
+            buildString {
+                repeat(5) {
+                    append(colorOptions.random())
+                }
+            }
+        } else {
+            // Modalità Facile: Genera un codice segreto senza colori ripetuti
+            val shuffledColors = colorOptions.shuffled().distinct()
+            if (shuffledColors.size >= 5) {
+                return shuffledColors.take(5).joinToString(separator = "")
+            } else {
+                return ""
             }
         }
     }
+
     private fun formatDate(timestamp: Long): String {
         val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
         val calendar = Calendar.getInstance()
@@ -61,11 +74,10 @@ class InstantGame(private val repository: Repository) {
 
 
     fun attempt(guess: String) {
-        var nrr: Int = 0
-        var nrw: Int = 0
+        var nrr = 0
+        var nrw = 0
         var newSecret = ""
         var newGuess = ""
-        var attempt: Attempt
         val evaluatedChars = mutableListOf<Char>()
 
         // Numero di cifre giuste al posto giusto
@@ -83,7 +95,7 @@ class InstantGame(private val repository: Repository) {
             }
         }
 
-        if (!newSecret.isEmpty()) {
+        if (newSecret.isNotEmpty()) {
             for (letter in guess) {
                 if (!evaluatedChars.contains(letter)) {
                     val howManyInSecret = countHowMany(newSecret, letter)
@@ -114,8 +126,8 @@ class InstantGame(private val repository: Repository) {
 
     private fun countHowMany(letters: String, letter: Char): Int {
         var howMany = 0
-        for (i in 0 until letters.length) {
-            if (letters[i] == letter) {
+        for (element in letters) {
+            if (element == letter) {
                 howMany++
             }
         }
@@ -138,11 +150,6 @@ class InstantGame(private val repository: Repository) {
             repository.insert(game)
         }
 
-    }
-
-
-    fun loadMatch() {
-        //TODO se ci va
     }
 }
 

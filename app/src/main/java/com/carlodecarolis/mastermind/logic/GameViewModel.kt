@@ -13,7 +13,6 @@ class MyViewModel(inGame: InstantGame, repo: Repository) {
     val instantGame : InstantGame
     val repository : Repository
     //var state = mutableStateOf(Init)
-    var n = 0
     var isDatabaseSaved = false
 
     init {
@@ -30,7 +29,9 @@ class MyViewModel(inGame: InstantGame, repo: Repository) {
                     if (instantGame.status.value == GameState.Ongoing)
                         instantGame.duration.value =
                             System.currentTimeMillis() - instantGame.startTime.absoluteValue
-                    Thread.sleep(500)
+                    withContext(Dispatchers.IO) {
+                        Thread.sleep(500)
+                    }
                 }
             }
         }

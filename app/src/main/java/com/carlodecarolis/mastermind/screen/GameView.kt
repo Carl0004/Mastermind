@@ -1,5 +1,6 @@
 package com.carlodecarolis.mastermind.screen
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.*
@@ -7,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -17,11 +17,9 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,19 +29,17 @@ import com.carlodecarolis.mastermind.db.DBMastermind
 import com.carlodecarolis.mastermind.db.Repository
 import com.carlodecarolis.mastermind.logic.InstantGame
 import com.carlodecarolis.mastermind.logic.MyViewModel
-import com.carlodecarolis.mastermind.logic.utils.Attempt
-import com.carlodecarolis.mastermind.logic.utils.Feedback
 import com.carlodecarolis.mastermind.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 
+@SuppressLint("SwitchIntDef")
 @Composable
 fun GameView(navController: NavHostController, vm: MyViewModel) {
     val configuration = LocalConfiguration.current
-    val feedbackTexts = remember { mutableStateListOf<String>() }
     when (configuration.orientation) {
         Configuration.ORIENTATION_PORTRAIT -> {
-            val selectedColors = remember { mutableStateListOf<String>("X", "X", "X", "X", "X") }
+            val selectedColors = remember { mutableStateListOf("X", "X", "X", "X", "X") }
 
             Column(
                 modifier = Modifier
@@ -66,6 +62,14 @@ fun GameView(navController: NavHostController, vm: MyViewModel) {
                             tint = Black200
                         )
                     }
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Text(
+                        text = vm.instantGame.difficulty.name,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(8.dp),
+                        color = W
+                    )
 
                     Spacer(modifier = Modifier.weight(0.1f))
                     Text(
@@ -101,7 +105,7 @@ fun GameView(navController: NavHostController, vm: MyViewModel) {
                 Spacer(modifier = Modifier.weight(0.2f))
 
                 // Pulsante Submit
-                ButtonGuess(vm, selectedColors)
+                ButtonGuess(selectedColors)
                 { selectedColor ->
                     val reset = listOf("X", "X", "X", "X", "X")
                     vm.instantGame.attempt(selectedColor.joinToString(separator = ""))
@@ -202,7 +206,6 @@ fun getColorForCode(code: String): Color {
 
 @Composable
 fun ButtonGuess(
-    vm: MyViewModel,
     selectedColors: SnapshotStateList<String>,
     onClick: (SnapshotStateList<String>) -> Unit
 ) {
@@ -259,7 +262,7 @@ fun GameArea(
 
                     if (rowIndex < instantGame.attempts.size) {
                         for (i in 0 until 5) {
-                            EmptyCircle(instantGame.attempts[rowIndex].guess.get(i).toString()){}
+                            EmptyCircle(instantGame.attempts[rowIndex].guess[i].toString()){}
                         }
                     } else if (rowIndex == instantGame.attempts.size) {
                         for (i in 0 until 5) {
@@ -280,7 +283,6 @@ fun GameArea(
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-            } else {
             }
         }
     }
@@ -439,14 +441,23 @@ fun ColorSelection(
     selectedColors: MutableList<String>,
     onClick: (String) -> Unit
 ) {
-
+    val selectableColors = when (vm.instantGame.difficulty) {
+        Difficulty.Easy -> {
+            // Modalità Facile: Rimuovi i colori già selezionati dai colorOptions
+            vm.instantGame.colorOptions.filterNot { selectedColors.contains(it) }
+        }
+        Difficulty.Normal -> {
+            // Modalità Normale: Usa tutti i colori disponibili
+            vm.instantGame.colorOptions
+        }
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 16.dp),
         horizontalArrangement = Arrangement.Center
     ) {
-        for (color in vm.instantGame.colorOptions) {
+        for (color in selectableColors) {
             ColorButton(
                 color = color,
                 onClick = { onClick(color) }

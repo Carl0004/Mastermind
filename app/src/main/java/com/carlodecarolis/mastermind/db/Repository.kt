@@ -24,9 +24,9 @@ class Repository(private val dao: MastermindDao) {
         }
     }
 
-    suspend fun deleteAllGameHistory() {
+    /*suspend fun deleteAllGameHistory() {
         withContext(Dispatchers.IO) {
             dao.deleteAllGameHistory()
         }
-    }
+    }*/
 }

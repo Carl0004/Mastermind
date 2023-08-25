@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.compose.rememberNavController
 import com.carlodecarolis.mastermind.db.DBMastermind
 import com.carlodecarolis.mastermind.db.Repository
 import com.carlodecarolis.mastermind.logic.InstantGame
@@ -38,16 +37,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-/*@Composable
-fun AppContent(gameViewModel: GameViewModel) {
-    MastermindTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = Black200
-        ) {
-            MainScreen(gameViewModel)
-        }
-    }
-}*/
 

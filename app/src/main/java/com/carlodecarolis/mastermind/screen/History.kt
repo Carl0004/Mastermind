@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.carlodecarolis.mastermind.db.Game
 import com.carlodecarolis.mastermind.logic.MyViewModel
 import com.carlodecarolis.mastermind.ui.theme.Black200
@@ -23,7 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun History(navController: NavController, gameViewModel: MyViewModel) {
+fun History(gameViewModel: MyViewModel) {
     var gameHistoryList by remember { mutableStateOf<List<Game>>(emptyList()) }
     var selectedCount by remember { mutableStateOf(0) }
 
@@ -40,16 +39,14 @@ fun History(navController: NavController, gameViewModel: MyViewModel) {
         LazyColumn {
             items(gameHistoryList) { gameHistory ->
                 GameHistoryItemRow(
-                    gameHistory = gameHistory,
-                    gameViewModel = gameViewModel,
-                    onSelectedChanged = { isSelected ->
-                        if (isSelected) {
-                            selectedCount++
-                        } else {
-                            selectedCount--
-                        }
+                    gameHistory = gameHistory
+                ) { isSelected ->
+                    if (isSelected) {
+                        selectedCount++
+                    } else {
+                        selectedCount--
                     }
-                )
+                }
             }
         }
 
@@ -90,9 +87,8 @@ fun History(navController: NavController, gameViewModel: MyViewModel) {
 @Composable
 fun GameHistoryItemRow(
     gameHistory: Game,
-    gameViewModel: MyViewModel,
     onSelectedChanged: (Boolean) -> Unit
-    ) {
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
