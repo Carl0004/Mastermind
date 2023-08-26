@@ -2,7 +2,9 @@ package com.carlodecarolis.mastermind.screen
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import android.util.Log
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -10,9 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,14 +33,36 @@ import com.carlodecarolis.mastermind.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 
+
 @SuppressLint("SwitchIntDef")
 @Composable
-fun GameView(navController: NavHostController, vm: MyViewModel) {
+fun GameView(navController: NavHostController, vm: MyViewModel, onBackPressedDispatcher: OnBackPressedDispatcher) {
     val configuration = LocalConfiguration.current
+    val showDialog = remember { mutableStateOf(false) } // Stato per mostrare/nascondere il dialog
+
+    // Aggiungi un callback per il tasto "Indietro" dell'OnBackPressedDispatcher
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current
+    val backCallback = rememberUpdatedState(backDispatcher)
+    DisposableEffect(Unit) {
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (vm.instantGame.isGameModified.value) {
+                    // La partita è stata modificata, mostra il prompt o esegui altre azioni qui
+                    showDialog.value = true
+                } else {
+                    // Esegui le azioni di navigazione desiderate (torna alla home o chiudi l'app)
+                    navController.navigate("Home")
+                }
+            }
+        }
+        callback.isEnabled = true
+        onDispose {
+            callback.remove()
+        }
+    }
     when (configuration.orientation) {
         Configuration.ORIENTATION_PORTRAIT -> {
             val selectedColors = remember { mutableStateListOf("X", "X", "X", "X", "X") }
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -52,7 +74,15 @@ fun GameView(navController: NavHostController, vm: MyViewModel) {
                     horizontalArrangement = Arrangement.Start
                 ) {
                     Button(
-                        onClick = { navController.navigate("Home") },
+                        onClick = {
+                            if (vm.instantGame.isGameModified.value) {
+                                // La partita è stata modificata, mostra il prompt o esegui altre azioni qui
+                                showDialog.value = true
+                            } else {
+                            // Esegui le azioni di navigazione desiderate (torna alla home o chiudi l'app)
+                            navController.navigate("Home")
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(ocra),
                         shape = RoundedCornerShape(15.dp)
                     ) {
@@ -176,11 +206,52 @@ fun GameView(navController: NavHostController, vm: MyViewModel) {
 
                 vm.instantGame.saveOnDb(vm.repository)
                 vm.isDatabaseSaved = true
-                Log.d("Debug", "GameView called. isGameFinished: ${vm.instantGame.isGameFinished}")
             }
         }
     }
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                // Chiudi il dialog senza salvare
+                showDialog.value = false
+            },
+            title = { Text("Salvare la partita?") },
+            text = { Text("La partita non è stata completata. Vuoi salvarla prima di uscire?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        // Chiama la funzione per salvare la partita sul database
+                        vm.instantGame.saveOnDb(vm.repository)
+
+                        // Esegui le azioni di navigazione desiderate
+                        navController.navigate("Home")
+
+                        // Chiudi il dialog
+                        showDialog.value = false
+                    }
+                ) {
+                    Text("Salva")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        // Esegui le azioni di navigazione desiderate
+                        navController.navigate("Home")
+
+                        // Chiudi il dialog senza salvare
+                        showDialog.value = false
+                    }
+                ) {
+                    Text("No")
+                }
+            }
+        )
+    }
 }
+
+
+
 
 @Composable
 private fun formatHour(timestamp: Long): String {
@@ -530,7 +601,7 @@ fun GreetingPreview() {
             modifier = Modifier.fillMaxSize(),
             color = Black200
         ) {
-            GameView(vm = vm, navController = navController)
+            GameView(vm = vm, navController = navController, onBackPressedDispatcher = OnBackPressedDispatcher())
         }
     }
 }

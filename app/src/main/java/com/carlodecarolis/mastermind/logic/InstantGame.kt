@@ -28,6 +28,8 @@ class InstantGame(private val repository: Repository) {
     private var currentId: Long = -1L
     val colorOptions = mutableListOf("W", "R", "C", "G", "Y", "P", "O", "B")
     var difficulty by mutableStateOf(Difficulty.Normal)
+    var isGameModified = mutableStateOf(false)
+
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
@@ -122,6 +124,7 @@ class InstantGame(private val repository: Repository) {
             isGameFinished.value = true
         }
 
+        isGameModified.value = true
     }
 
     private fun countHowMany(letters: String, letter: Char): Int {
@@ -140,7 +143,7 @@ class InstantGame(private val repository: Repository) {
             id = currentId++,
             version = "1.0",
             secretCode = secret.value,
-            result = if (isGameFinished.value) "Game Over" else "Correct Combination!",
+            result = if (isGameFinished.value) "Game Over" else "Correct Combination!", //TODO: correggere risultato
             attempts = attempts.size,
             duration = duration.value,
             date = System.currentTimeMillis()
